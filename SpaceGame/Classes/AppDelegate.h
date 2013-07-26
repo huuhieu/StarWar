@@ -1,10 +1,13 @@
-//
-//  SpaceGameAppDelegate.h
-//  SpaceGame
-//
-//  Created by MAC on 7/25/13.
-//  Copyright __MyCompanyName__ 2013. All rights reserved.
-//
+/**************************************************************
+ *
+ * ___AppDelegate.h___
+ * ___SpaceGame___
+ *
+ * Create by ___DuongHuuHieu___
+ *
+ * Copyright Vinova Pte. Ltd. All right reserved.
+ *************************************************************
+ */
 
 #ifndef  _APP_DELEGATE_H_
 #define  _APP_DELEGATE_H_
