@@ -32,8 +32,9 @@ public:
     virtual void didAccelerate(CCAcceleration* pAccelerationValue);
   
     float randomValueBetween(float pLow, float pHigh);
-    void setInvisible(CCNode* pNode);
+    void setInvisible(CCNode* node);
     float getTimeTick();
+    virtual void ccTouchesBegan(cocos2dx_ccTypeInfo_h)
 
     // preprocessor macro for "static create()" constructor ( node() deprecated )
     CREATE_FUNC(HelloWorld);
@@ -49,6 +50,8 @@ private:
     CCSprite* mSpacialAnomaly;
     CCSprite* mSpacialAnomaly2;
     CCArray* mAsteroids;
+    CCArray* mShipLasers;
+    int mNextShipLasers;
     int mNextASteroids;
     float mNextAsteroidSpawn;
     float mShipPointsPerSecY;

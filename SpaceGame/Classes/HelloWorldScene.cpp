@@ -90,7 +90,7 @@ bool HelloWorld::init()
   //create an array of asteroids
   #define KNUMASTEROIDS 15
   mAsteroids = new CCArray();
-  for (int i=0; i<KNUMASTEROIDS; i++)
+  for (int i=0; i<KNUMASTEROIDS; ++i)
   {
     CCSprite* asteroid = CCSprite::createWithSpriteFrameName("asteroid.png");
     asteroid->setVisible(false);
@@ -100,7 +100,6 @@ bool HelloWorld::init()
   
   //enable Accelerometer
   this->setAccelerometerEnabled(true);
-  
   return true;
 }
 
@@ -128,11 +127,13 @@ void HelloWorld::update(float pDt)
   for (int ii=0; ii<spaceDusts->count(); ii++)
   {
     CCSprite* spaceDust = (CCSprite*)(spaceDusts->objectAtIndex(ii));
-    float xPosition = mBackgroundNode->convertToWorldSpace(spaceDust->getPosition()).x;
+    float xPosition = mBackgroundNode->convertToWorldSpace(
+                                       spaceDust->getPosition()).x;
     float size = spaceDust->getContentSize().width;
     if (xPosition<-size/2)
     {
-      mBackgroundNode->incrementOffset(ccp(spaceDust->getContentSize().width*2,0), spaceDust);
+      mBackgroundNode->incrementOffset(ccp(
+                       spaceDust->getContentSize().width*2,0), spaceDust);
     }
   }
   CCArray* backGrounds = CCArray::createWithCapacity(4);
@@ -144,15 +145,14 @@ void HelloWorld::update(float pDt)
   {
     CCSprite* background = (CCSprite*)(backGrounds->objectAtIndex(ii));
     float xPosition = mBackgroundNode->convertToWorldSpace(
-                                                           background->getPosition()).x;
+                                      background->getPosition()).x;
     float size = background->getContentSize().width;
     if (xPosition<-size)
     {
       mBackgroundNode->incrementOffset(ccp(2000,0), background);
     }
-    
-    
   }
+  
   CCSize winSize = CCDirector::sharedDirector()->getWinSize();
   float maxY = winSize.height - mShip->getContentSize().height/2;
   float minY = mShip->getContentSize().height/2;
@@ -163,29 +163,29 @@ void HelloWorld::update(float pDt)
   mShip->setPosition(ccp(mShip->getPosition().x, newY));
   
   float curTimeMillis = getTimeTick();
-  if (curTimeMillis > mNextAsteroidSpawn) {
+  if (curTimeMillis > mNextAsteroidSpawn);
+  {
+  float randMillisecs = randomValueBetween(0.20,1.0) * 1000;
+  mNextAsteroidSpawn = randMillisecs + curTimeMillis;
     
-    float randMillisecs = randomValueBetween(0.20,1.0) * 1000;
-    mNextAsteroidSpawn = randMillisecs + curTimeMillis;
+  float randY = randomValueBetween(0.0,winSize.height);
+  float randDuration = randomValueBetween(2.0,10.0);
     
-    float randY = randomValueBetween(0.0,winSize.height);
-    float randDuration = randomValueBetween(2.0,10.0);
+  CCSprite* asteroid = (CCSprite *)mAsteroids->objectAtIndex(mNextASteroids);
+  mNextASteroids++;
     
-    CCSprite *asteroid = (CCSprite *)mAsteroids->objectAtIndex(mNextASteroids);
-    mNextASteroids++;
+  if (mNextASteroids >= mAsteroids->count())
+  mNextASteroids = 0;
     
-    if (mNextASteroids >= mAsteroids->count())
-      mNextASteroids = 0;
-    
-    asteroid->stopAllActions();
-    asteroid->setPosition( ccp(winSize.width+asteroid->getContentSize().width/2,
+  asteroid->stopAllActions();
+  asteroid->setPosition( ccp(winSize.width+asteroid->getContentSize().width/2,
                                randY));
-    asteroid->setVisible(true);
-    asteroid->runAction(CCSequence::create(
-                        CCMoveBy::create(randDuration,
-                        ccp(-winSize.width-asteroid->getContentSize().width, 0)),
-                        CCCallFuncN::create(this,
-                        callfuncN_selector(HelloWorld::setInvisible)),NULL));
+  asteroid->setVisible(true);
+  asteroid->runAction(CCSequence::create(
+                      CCMoveBy::create(randDuration,
+                      ccp(-winSize.width-asteroid->getContentSize().width, 0)),
+                      CCCallFuncN::create(this,
+                      callfuncN_selector(HelloWorld::setInvisible)),NULL));
   }
 }
 
@@ -208,10 +208,10 @@ void HelloWorld::didAccelerate(CCAcceleration* pAccelerationValue)
   mShipPointsPerSecY = KSHIPMAXPOINTSPERSEC * accelFraction;
 }
 
-//return random value between low and hight
+//return random value between low and high
 float HelloWorld::randomValueBetween(float pLow, float pHigh)
 {
-  return (((float)arc4random()/0xFFFFFFFFu)*(pHigh-pLow)) + pLow;
+  return (((float)arc4random()/0xFFFFFFFFu)*(pHigh-pLow)*(pHigh-pLow)) + pLow;
 }
 
 //get the time in milliseconds
@@ -224,8 +224,8 @@ float HelloWorld::getTimeTick()
   return (float) millisecs;
 }
 
-void HelloWorld::setInvisible(CCNode* pNode)
+void HelloWorld::setInvisible(CCNode* node)
 {
-  pNode->setVisible(false);
+  node->setVisible(false);
 }
 
