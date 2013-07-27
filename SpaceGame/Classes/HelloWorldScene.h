@@ -19,22 +19,28 @@ USING_NS_CC;
 
 class HelloWorld : public cocos2d::CCLayer
 {
+enum eEndReason
+{
+    KENDREASONWIN,
+    KENDREASONLOSE
+};
+  
 public:
-    // Method 'init' in cocos2d-x returns bool, instead of 'id' in cocos2d-iphone (an object pointer)
+    // Method 'init' in cocos2d-x returns bool,
+    //instead of 'id' in cocos2d-iphone (an object pointer)
     virtual bool init();
 
-    // there's no 'id' in cpp, so we recommend to return the class instance pointer
+    // there's no 'id' in cpp, so we recommend
+    // o return the class instance pointer
     static cocos2d::CCScene* scene();
     
     // a selector callback
     void menuCloseCallback(CCObject* pSender);
   
-    virtual void didAccelerate(CCAcceleration* pAccelerationValue);
-  
     float randomValueBetween(float pLow, float pHigh);
     void setInvisible(CCNode* node);
     float getTimeTick();
-    virtual void ccTouchesBegan(cocos2dx_ccTypeInfo_h)
+    void ccTouchesMoved(cocos2d::CCSet* pTouches, cocos2d::CCEvent* pEvent);
 
     // preprocessor macro for "static create()" constructor ( node() deprecated )
     CREATE_FUNC(HelloWorld);
@@ -53,8 +59,13 @@ private:
     CCArray* mShipLasers;
     int mNextShipLasers;
     int mNextASteroids;
+    int mLives;
     float mNextAsteroidSpawn;
     float mShipPointsPerSecY;
+    double mGameOverTime;
+    bool isGameOver;
+    void endScene(eEndReason pEndReason);
+    void restartTapped();
     void update(float pDt);
     
 };

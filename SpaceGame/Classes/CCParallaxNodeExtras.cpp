@@ -1,10 +1,13 @@
-//
-//  CCParallaxNodeExtras.cpp
-//  SpaceGame
-//
-//  Created by MAC on 7/26/13.
-//
-//
+/**************************************************************
+ *
+ * ___CCParallaxNodeExtras___
+ * ___SpaceGame___
+ *
+ * Create by ___DuongHuuHieu___
+ *
+ * Copyright Vinova Pte. Ltd. All right reserved.
+ **************************************************************
+ */
 
 #include "CCParallaxNodeExtras.h"
 

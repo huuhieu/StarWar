@@ -1,10 +1,13 @@
-//
-//  CCParallaxNodeExtras.h
-//  SpaceGame
-//
-//  Created by MAC on 7/26/13.
-//
-//
+/**************************************************************
+ *
+ * ___CCParallaxNodeExtras___
+ * ___SpaceGame___
+ *
+ * Create by ___DuongHuuHieu___
+ *
+ * Copyright Vinova Pte. Ltd. All right reserved.
+ **************************************************************
+ */
 
 #ifndef __SpaceGame__CCParallaxNodeExtras__
 #define __SpaceGame__CCParallaxNodeExtras__
@@ -16,7 +19,7 @@ USING_NS_CC;
 class CCParallaxNodeExtras : public CCParallaxNode
 {
 public:
-    //Need to provide a constructor
+  //Need to provide a constructor
   CCParallaxNodeExtras();
   
   static CCParallaxNodeExtras* node();

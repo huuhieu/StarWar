@@ -17,7 +17,8 @@
 /**
 @brief    The cocos2d Application.
 
-The reason to implement with private inheritance is to hide some interface details of CCDirector.
+The reason to implement with private inheritance
+is to hide some interface details of CCDirector.
 */
 class  AppDelegate : private cocos2d::CCApplication
 {

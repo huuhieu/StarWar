@@ -6,7 +6,7 @@
  * Create by ___DuongHuuHieu___
  *
  * Copyright Vinova Pte. Ltd. All right reserved.
- *************************************************************
+ **************************************************************
  */
 
 #include "HelloWorldScene.h"
@@ -18,10 +18,10 @@ using namespace CocosDenshion;
 CCScene* HelloWorld::scene()
 {
     // 'scene' is an autorelease object
-    CCScene *scene = CCScene::create();
+    CCScene* scene = CCScene::create();
     
     // 'layer' is an autorelease object
-    HelloWorld *layer = HelloWorld::create();
+    HelloWorld* layer = HelloWorld::create();
 
     // add layer as a child to scene
     scene->addChild(layer);
@@ -33,17 +33,22 @@ CCScene* HelloWorld::scene()
 // on "init" you need to initialize your instance
 bool HelloWorld::init()
 {
-    //////////////////////////////
-    // 1. super init first
-    if ( !CCLayer::init() )
-    {
-        return false;
-    }
+  mLives = 3;
+  double curTime = getTimeTick();
+  mGameOverTime = curTime + 30000;
+  
+  //////////////////////////////
+  // 1. super init first
+  if ( !CCLayer::init() )
+  {
+    return false;
+  }
 
-  //add spaceFilier
+  //add spaceFlier
   mBatchNote = CCSpriteBatchNode::create("Sprites.pvr.ccz");
   this->addChild(mBatchNote);
-  CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile("Sprites.plist");
+  CCSpriteFrameCache::sharedSpriteFrameCache()->addSpriteFramesWithFile(
+                                              "Sprites.plist");
   mShip = CCSprite::createWithSpriteFrameName("SpaceFlier_sm_1.png");
   CCSize winSize = CCDirector::sharedDirector()->getWinSize();
   mShip->setPosition(ccp(winSize.width*0.1, winSize.height*0.5));
@@ -79,8 +84,6 @@ bool HelloWorld::init()
                             ccp(900, winSize.height*0.3));
   mBackgroundNode->addChild(mSpacialAnomaly2, -1, bgSpeed,
                             ccp(1500, winSize.height*0.9));
-  //call schedule
-  this->scheduleUpdate();
   
   //add shining stars
   HelloWorld::addChild(CCParticleSystemQuad::create("Stars1.plist"));
@@ -88,18 +91,35 @@ bool HelloWorld::init()
   HelloWorld::addChild(CCParticleSystemQuad::create("Stars3.plist"));
   
   //create an array of asteroids
-  #define KNUMASTEROIDS 15
+  #define KNUMASTEROIDS 30
   mAsteroids = new CCArray();
   for (int i=0; i<KNUMASTEROIDS; ++i)
   {
-    CCSprite* asteroid = CCSprite::createWithSpriteFrameName("asteroid.png");
+    CCSprite* asteroid = CCSprite::createWithSpriteFrameName(
+                                   "asteroid.png");
     asteroid->setVisible(false);
     mBatchNote->addChild(asteroid);
     mAsteroids->addObject(asteroid);
   }
   
-  //enable Accelerometer
-  this->setAccelerometerEnabled(true);
+  //create an array of laserbeam
+  #define KNUMLASERS 30
+  mShipLasers = new CCArray();
+  for(int i=0; i<KNUMLASERS; ++i) {
+    CCSprite* shipLaser = CCSprite::createWithSpriteFrameName(
+                                    "laserbeam_blue.png");
+    shipLaser->setVisible(false);
+    mBatchNote->addChild(shipLaser);
+    mShipLasers->addObject(shipLaser);
+  }
+  
+  //add sound
+  SimpleAudioEngine::sharedEngine()->playBackgroundMusic("SpaceGame.wav",true);
+  SimpleAudioEngine::sharedEngine()->preloadEffect("explosion_large.wav");
+  SimpleAudioEngine::sharedEngine()->preloadEffect("laser_ship.wav");
+  
+  this->setTouchEnabled(true);
+  this->scheduleUpdate();
   return true;
 }
 
@@ -154,16 +174,10 @@ void HelloWorld::update(float pDt)
   }
   
   CCSize winSize = CCDirector::sharedDirector()->getWinSize();
-  float maxY = winSize.height - mShip->getContentSize().height/2;
-  float minY = mShip->getContentSize().height/2;
   
-  float diff = (mShipPointsPerSecY * pDt);
-  float newY = mShip->getPosition().y + diff;
-  newY = MIN(MAX(newY, minY), maxY);
-  mShip->setPosition(ccp(mShip->getPosition().x, newY));
-  
+  //spawn and move asteroids
   float curTimeMillis = getTimeTick();
-  if (curTimeMillis > mNextAsteroidSpawn);
+  if (curTimeMillis > mNextAsteroidSpawn)
   {
   float randMillisecs = randomValueBetween(0.20,1.0) * 1000;
   mNextAsteroidSpawn = randMillisecs + curTimeMillis;
@@ -175,7 +189,9 @@ void HelloWorld::update(float pDt)
   mNextASteroids++;
     
   if (mNextASteroids >= mAsteroids->count())
+  {
   mNextASteroids = 0;
+  }
     
   asteroid->stopAllActions();
   asteroid->setPosition( ccp(winSize.width+asteroid->getContentSize().width/2,
@@ -187,31 +203,71 @@ void HelloWorld::update(float pDt)
                       CCCallFuncN::create(this,
                       callfuncN_selector(HelloWorld::setInvisible)),NULL));
   }
-}
-
-void HelloWorld::didAccelerate(CCAcceleration* pAccelerationValue)
-{
-#define KFILTERINGFACTOR 0.1
-#define KRESTACCELX -0.6
-#define KSHIPMAXPOINTSPERSEC (winSize.height*0.5)  
-#define KMAXDIFFX 0.2
   
-  double rollingX;
+  //Auto fire laserbeam
+  SimpleAudioEngine::sharedEngine()->playEffect("laser_ship.wav");
+	CCSprite* shipLaser = (CCSprite*)mShipLasers->objectAtIndex(mNextShipLasers);
+  mNextShipLasers++;
+	if( mNextShipLasers >= mShipLasers->count())
+  {
+  mNextShipLasers = 0;
+  }
+  shipLaser->stopAllActions();
+	shipLaser->setPosition( ccpAdd(mShip->getPosition(),
+                                 ccp(shipLaser->getContentSize().width/2, 0)));
+  shipLaser->setVisible(true);
+  shipLaser->runAction(CCSequence::create(
+                                   CCMoveBy::create(0.5,ccp(winSize.width, 0)),
+                                   CCCallFuncN::create(this,
+                                   callfuncN_selector(HelloWorld::setInvisible)),
+                                   NULL));
   
-  pAccelerationValue->x = pAccelerationValue->y;
-  rollingX = (pAccelerationValue->x * KFILTERINGFACTOR) +
-              (rollingX * (1.0 - KFILTERINGFACTOR));
-  float accelX = pAccelerationValue->x - rollingX;
-  CCSize winSize = CCDirector::sharedDirector()->getWinSize();
-  float accelDiff = accelX - KRESTACCELX;
-  float accelFraction = accelDiff / KMAXDIFFX;
-  mShipPointsPerSecY = KSHIPMAXPOINTSPERSEC * accelFraction;
+  //destroy asteroids
+  CCObject* asteroid;
+  CCObject* mshipLaser;
+  CCARRAY_FOREACH(mAsteroids, asteroid){
+    if (!((CCSprite *) asteroid)->isVisible() )
+    {
+      continue;
+    }
+    CCARRAY_FOREACH(mShipLasers, mshipLaser){
+      if (!((CCSprite *) mshipLaser)->isVisible())
+      {
+        continue;
+      }
+      if (((CCSprite *) mshipLaser)->boundingBox().intersectsRect(((
+                                    CCSprite *)asteroid)->boundingBox()))
+      {
+        ((CCSprite *)mshipLaser)->setVisible(false);
+        ((CCSprite *)asteroid)->setVisible(false);
+        SimpleAudioEngine::sharedEngine()->playEffect("explosion_large.wav");
+        continue;
+      }
+    }
+    if (mShip->boundingBox().intersectsRect(((
+                             CCSprite *)asteroid)->boundingBox()) )
+    {
+      ((CCSprite *)asteroid)->setVisible(false);
+      mShip->runAction(CCBlink::create(1.0, 9));
+      mLives--;
+    }
+  }
+  
+  if (mLives <= 0)
+  {
+    mShip->stopAllActions();
+    mShip->setVisible(false);
+    this->endScene(KENDREASONLOSE);
+  } else if (curTimeMillis >= mGameOverTime)
+  {
+    this->endScene(KENDREASONWIN);
+  }
 }
 
 //return random value between low and high
 float HelloWorld::randomValueBetween(float pLow, float pHigh)
 {
-  return (((float)arc4random()/0xFFFFFFFFu)*(pHigh-pLow)*(pHigh-pLow)) + pLow;
+  return (((float)arc4random()/0xFFFFFFFFu)*(pHigh-pLow)) + pLow;
 }
 
 //get the time in milliseconds
@@ -229,3 +285,70 @@ void HelloWorld::setInvisible(CCNode* node)
   node->setVisible(false);
 }
 
+//Moving the ship
+void HelloWorld::ccTouchesMoved(cocos2d::CCSet* pTouches,
+                                cocos2d::CCEvent* pEvent)
+{
+	CCTouch* touch = (CCTouch*) pTouches->anyObject();
+	CCPoint dt = touch->getLocationInView();
+  
+  CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+  float maxY = winSize.height - mShip->getContentSize().height/2;
+  float minY = mShip->getContentSize().height/2;
+  
+  float diff = (mShipPointsPerSecY * dt.y);
+  float newY = mShip->getPosition().y + diff;
+  newY = MIN(MAX(newY, minY), maxY);
+  
+	mShip->setPosition(ccp(mShip->getPosition().x,
+                         winSize.height - dt.y));
+  
+}
+
+void HelloWorld::restartTapped()
+{
+  CCDirector::sharedDirector()->replaceScene
+  (CCTransitionZoomFlipX::create(0.5, this->scene()));
+  // reschedule
+  this->scheduleUpdate();
+}
+
+//End Scene
+void HelloWorld::endScene(eEndReason endReason)
+{
+  if (isGameOver)
+  {
+  return;
+  }
+  isGameOver = true;
+  
+  CCSize winSize = CCDirector::sharedDirector()->getWinSize();
+  char message[10] = "You Win";
+  if ( endReason == KENDREASONLOSE)
+  {
+    strcpy(message,"You Lose");
+  }
+  CCLabelBMFont* label ;
+  label = CCLabelBMFont::create(message, "Arial.fnt");
+  label->setScale(0.1);
+  label->setPosition(ccp(winSize.width/2 , winSize.height*0.6));
+  this->addChild(label);
+  
+  CCLabelBMFont* restartLabel;
+  strcpy(message,"Restart");
+  restartLabel = CCLabelBMFont::create(message, "Arial.fnt");
+  CCMenuItemLabel *restartItem = CCMenuItemLabel::create(restartLabel,
+                                                  this, menu_selector(
+                                                  HelloWorld::restartTapped));
+  restartItem->setScale(0.1);
+  restartItem->setPosition(ccp(winSize.width/2, winSize.height*0.4));
+  
+  CCMenu* menu = CCMenu::create(restartItem, NULL);
+  menu->setPosition(CCPointZero);
+  this->addChild(menu);
+  
+  //Clear label and menu
+  restartItem->runAction(CCScaleTo::create(0.5, 1.0));
+  label ->runAction(CCScaleTo::create(0.5, 1.0));
+  this->unscheduleUpdate();
+}
